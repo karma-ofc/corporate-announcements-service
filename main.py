@@ -38,15 +38,15 @@ def run() -> None:
             save_announcements(DATA_FILE, announcements)
 
         announcement = announcements[0]
-        expiry_date = date.fromisoformat(str(announcement["expiry_date"]))
+        expiry_date = announcement.expiry_date
         print("=== Сервис корпоративных объявлений ===")
-        print(f"Заголовок: {announcement['title']}")
-        print(f"Отдел: {announcement['department']}")
+        print(f"Заголовок: {announcement.title}")
+        print(f"Отдел: {announcement.department}")
         print(f"Срок действия до: {expiry_date}")
         print()
-        print(validate_announcement_title(str(announcement["title"])))
-        print(format_priority_level(int(announcement["priority"])))
-        print(get_publication_status(bool(announcement["is_published"])))
+        print(validate_announcement_title(announcement.title))
+        print(format_priority_level(announcement.priority))
+        print(get_publication_status(announcement.is_published))
         print(get_expiry_message(expiry_date, today))
         active_count = len(list(active_announcements(announcements, today)))
         print(f"Активных объявлений: {active_count}")

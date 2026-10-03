@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-from announcements import Announcement
+from announcements import Announcement, AnnouncementError
 
 
 class StorageError(RuntimeError):
@@ -21,7 +21,11 @@ def load_announcements(file_path: Path) -> list[Announcement]:
         raise StorageError(f"Не удалось загрузить данные: {error}") from error
     if not isinstance(data, list):
         raise StorageError("Файл данных должен содержать список объявлений")
-    return data
+    try:
+        return [Announcement.from_dict(item) for item in data]
+    except (AnnouncementError, TypeError) as error:
+        message = f"Некорректные данные объявлений: {error}"
+        raise StorageError(message) from error
 
 
 def save_announcements(
@@ -32,6 +36,11 @@ def save_announcements(
     try:
         file_path.parent.mkdir(parents=True, exist_ok=True)
         with file_path.open("w", encoding="utf-8") as file:
-            json.dump(announcements, file, ensure_ascii=False, indent=2)
+            json.dump(
+                [announcement.to_dict() for announcement in announcements],
+                file,
+                ensure_ascii=False,
+                indent=2,
+            )
     except OSError as error:
         raise StorageError(f"Не удалось сохранить данные: {error}") from error
