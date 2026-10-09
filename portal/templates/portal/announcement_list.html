@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Все объявления — Корпоративные объявления{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <p class="eyebrow">Лента компании</p>
+    <h1>Все объявления</h1>
+    <p class="muted">Сначала отображаются сообщения с наивысшим приоритетом.</p>
+</section>
+
+{% if announcements %}
+    <div class="announcement-list">
+        {% for announcement in announcements %}
+            <article class="card list-card">
+                <div>
+                    <span class="priority priority-{{ announcement.priority }}">
+                        {{ announcement.priority_label }}
+                    </span>
+                    <h2>
+                        <a href="{% url 'portal:announcement_detail' forloop.counter %}">
+                            {{ announcement.title }}
+                        </a>
+                    </h2>
+                    <p class="muted">
+                        {{ announcement.department }} · {{ announcement.publish_date|date:"d.m.Y" }}
+                    </p>
+                    {% if announcement.text %}<p>{{ announcement.text|truncatewords:32 }}</p>{% endif %}
+                </div>
+                <a class="text-link" href="{% url 'portal:announcement_detail' forloop.counter %}">
+                    Подробнее <span aria-hidden="true">→</span>
+                </a>
+            </article>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="empty-state">Пока нет объявлений.</p>
+{% endif %}
+{% endblock %}

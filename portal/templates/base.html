@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f7fb">
+    <title>{% block title %}Корпоративные объявления{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'portal/style.css' %}">
+</head>
+<body>
+    <header class="site-header">
+        <nav class="nav container" aria-label="Основная навигация">
+            <a class="brand" href="{% url 'portal:home' %}">Внутри компании</a>
+            <div class="nav-links">
+                <a href="{% url 'portal:home' %}">Главная</a>
+                <a href="{% url 'portal:announcement_list' %}">Все объявления</a>
+            </div>
+        </nav>
+    </header>
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+    <footer class="site-footer">
+        <div class="container">Корпоративный портал объявлений</div>
+    </footer>
+</body>
+</html>

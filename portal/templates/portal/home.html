@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Главная — Корпоративные объявления{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <p class="eyebrow">Новости и важная информация</p>
+    <h1>Всё важное — в одном месте</h1>
+    <p class="hero-copy">Объявления отделов, обновления и новости компании.</p>
+    <a class="button" href="{% url 'portal:announcement_list' %}">Все объявления</a>
+</section>
+
+<section class="section" aria-labelledby="latest-heading">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">Лента компании</p>
+            <h2 id="latest-heading">Последние объявления</h2>
+        </div>
+        <p class="muted">{{ active_count }} активно из {{ announcement_count }}</p>
+    </div>
+    {% if announcements %}
+        <div class="announcement-grid">
+            {% for announcement in announcements %}
+                <article class="card">
+                    <span class="priority priority-{{ announcement.priority }}">
+                        {{ announcement.priority_label }}
+                    </span>
+                    <h3>
+                        <a href="{% url 'portal:announcement_detail' forloop.counter %}">
+                            {{ announcement.title }}
+                        </a>
+                    </h3>
+                    <p class="muted">{{ announcement.department }}</p>
+                    {% if announcement.text %}
+                        <p>{{ announcement.text|truncatewords:24 }}</p>
+                    {% endif %}
+                    <a class="text-link" href="{% url 'portal:announcement_detail' forloop.counter %}">
+                        Читать объявление <span aria-hidden="true">→</span>
+                    </a>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="empty-state">Пока нет объявлений.</p>
+    {% endif %}
+</section>
+{% endblock %}

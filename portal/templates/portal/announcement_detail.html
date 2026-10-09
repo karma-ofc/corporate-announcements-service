@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}{{ announcement.title }} — Корпоративные объявления{% endblock %}
+
+{% block content %}
+<article class="detail-card">
+    <a class="back-link" href="{% url 'portal:announcement_list' %}">← Все объявления</a>
+    <p class="eyebrow">{{ announcement.department }}</p>
+    <h1>{{ announcement.title }}</h1>
+    <div class="detail-meta">
+        <span class="priority priority-{{ announcement.priority }}">
+            {{ announcement.priority_label }}
+        </span>
+        <span>Опубликовано: {{ announcement.publish_date|date:"d.m.Y" }}</span>
+        <span>Действует до: {{ announcement.expiry_date|date:"d.m.Y" }}</span>
+    </div>
+    {% if is_active %}
+        <p class="status status-active">Объявление опубликовано и активно.</p>
+    {% elif announcement.is_published %}
+        <p class="status status-expired">Срок действия объявления истёк.</p>
+    {% else %}
+        <p class="status status-draft">Объявление находится в черновике.</p>
+    {% endif %}
+    <div class="announcement-body">
+        {% if announcement.text %}
+            {{ announcement.text|linebreaks }}
+        {% else %}
+            <p>Подробности не указаны.</p>
+        {% endif %}
+    </div>
+</article>
+{% endblock %}

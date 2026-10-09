@@ -86,6 +86,11 @@ class Announcement:
             f"{format_priority_level(self.priority)})"
         )
 
+    @property
+    def priority_label(self) -> str:
+        """Return the display label for this announcement's priority."""
+        return format_priority_level(self.priority)
+
     def is_active(self, reference: date) -> bool:
         """Return whether the announcement is published and not expired."""
         return self.is_published and self.expiry_date >= reference

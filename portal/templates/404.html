@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Страница не найдена — Корпоративные объявления{% endblock %}
+
+{% block content %}
+<section class="not-found">
+    <p class="eyebrow">Ошибка 404</p>
+    <h1>Страница не найдена</h1>
+    <p class="muted">Такой страницы или объявления нет. Возможно, ссылка устарела.</p>
+    <a class="button" href="{% url 'portal:home' %}">На главную</a>
+</section>
+{% endblock %}
