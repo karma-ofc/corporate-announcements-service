@@ -7,6 +7,32 @@
     text-rendering: optimizeLegibility;
 }
 
+.announcement-card[hidden] {
+    display: none;
+}
+
+.search-label {
+    display: block;
+    margin: 0 0 6px;
+    font-weight: 700;
+}
+
+.search-input {
+    width: min(100%, 520px);
+    margin-bottom: 22px;
+    padding: 12px 14px;
+    border: 1px solid #cbd5e4;
+    border-radius: 10px;
+    color: #17243a;
+    background: #fff;
+    font: inherit;
+}
+
+.search-input:focus {
+    border-color: #4778ef;
+    outline: 3px solid rgb(71 120 239 / 18%);
+}
+
 * {
     box-sizing: border-box;
 }
@@ -53,6 +79,7 @@ a:hover {
 
 .nav-links {
     display: flex;
+    flex-wrap: wrap;
     gap: 24px;
     font-weight: 600;
 }
@@ -63,10 +90,17 @@ a:hover {
     border-radius: 24px;
     color: #fff;
     background: linear-gradient(120deg, #173a9a, #4778ef);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+}
+
+.hero-copy-column {
+    max-width: 650px;
 }
 
 .hero h1 {
-    max-width: 650px;
     margin: 8px 0;
     font-size: clamp(2rem, 5vw, 3.5rem);
     line-height: 1.1;
@@ -76,6 +110,13 @@ a:hover {
     margin-bottom: 26px;
     color: #e1e9ff;
     font-size: 1.1rem;
+}
+
+.hero-image {
+    display: block;
+    width: min(250px, 32%);
+    height: auto;
+    flex: 0 0 auto;
 }
 
 .eyebrow {
@@ -284,6 +325,16 @@ a:hover {
 }
 
 @media (max-width: 600px) {
+    .hero {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .hero-image {
+        width: min(190px, 75%);
+        align-self: center;
+    }
+
     .nav {
         align-items: flex-start;
         flex-direction: column;

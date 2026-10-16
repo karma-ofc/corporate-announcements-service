@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} — Корпоративные объявления{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <p class="eyebrow">Лента компании</p>
+    <h1>{{ page_title }}</h1>
+    <p class="muted">{{ page_description }}</p>
+</section>
+
+<label class="search-label" for="announcement-search">Найти объявление</label>
+<input
+    class="search-input"
+    id="announcement-search"
+    type="search"
+    placeholder="Введите заголовок или название отдела"
+    autocomplete="off"
+>
+
+{% if announcements %}
+    <div class="announcement-grid announcement-list" id="announcement-results">
+        {% for announcement_id, announcement in announcements %}
+            {% include "portal/partials/announcement_card.html" %}
+        {% endfor %}
+    </div>
+    <p class="empty-state search-empty" id="search-empty" hidden>
+        Объявления по вашему запросу не найдены.
+    </p>
+{% else %}
+    <p class="empty-state">{{ empty_message }}</p>
+{% endif %}
+{% endblock %}

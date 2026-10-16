@@ -1,0 +1,19 @@
+<article class="card announcement-card">
+    <span class="priority priority-{{ announcement.priority }}">
+        {{ announcement.priority_label }}
+    </span>
+    <h2>
+        <a href="{% url 'portal:announcement_detail' announcement_id %}">
+            {{ announcement.title }}
+        </a>
+    </h2>
+    <p class="muted">
+        {{ announcement.department }} · {{ announcement.publish_date|date:"d.m.Y" }}
+    </p>
+    {% if announcement.text %}
+        <p>{{ announcement.text|truncatewords:32 }}</p>
+    {% endif %}
+    <a class="text-link" href="{% url 'portal:announcement_detail' announcement_id %}">
+        Читать объявление <span aria-hidden="true">→</span>
+    </a>
+</article>

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Главная — Корпоративные объявления{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-copy-column">
+        <p class="eyebrow">Новости и важная информация</p>
+        <h1>Всё важное — в одном месте</h1>
+        <p class="hero-copy">Объявления отделов, обновления и новости компании.</p>
+        <a class="button" href="{% url 'portal:announcement_list' %}">Все объявления</a>
+    </div>
+    <img
+        class="hero-image"
+        src="{% static 'portal/announcements.svg' %}"
+        alt="Иллюстрация корпоративного объявления"
+        width="250"
+        height="210"
+    >
+</section>
+
+<section class="section" aria-labelledby="latest-heading">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">Лента компании</p>
+            <h2 id="latest-heading">Последние объявления</h2>
+        </div>
+        <p class="muted">{{ active_count }} активно из {{ announcement_count }}</p>
+    </div>
+    {% if announcements %}
+        <div class="announcement-grid">
+            {% for announcement_id, announcement in announcements %}
+                {% include "portal/partials/announcement_card.html" %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="empty-state">Пока нет объявлений.</p>
+    {% endif %}
+</section>
+{% endblock %}
