@@ -8,12 +8,17 @@ from django.template.loader import get_template
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
+from db.import_json import import_announcements
+
 
 class AnnouncementPageTests(TestCase):
     def setUp(self) -> None:
         temporary_directory = tempfile.TemporaryDirectory()
         self.addCleanup(temporary_directory.cleanup)
         self.data_file = Path(temporary_directory.name) / "announcements.json"
+        self.database_file = (
+            Path(temporary_directory.name) / "announcements.sqlite3"
+        )
         today = date.today()
         self.data_file.write_text(
             json.dumps(
@@ -56,8 +61,9 @@ class AnnouncementPageTests(TestCase):
             ),
             encoding="utf-8",
         )
+        import_announcements(self.data_file, self.database_file)
         settings_override = override_settings(
-            ANNOUNCEMENTS_FILE=self.data_file
+            ANNOUNCEMENTS_DB_PATH=self.database_file
         )
         settings_override.enable()
         self.addCleanup(settings_override.disable)
@@ -99,6 +105,29 @@ class AnnouncementPageTests(TestCase):
         self.assertNotContains(archive_response, "Черновик отдела")
         self.assertContains(archive_response, 'href="/announcements/2/"')
 
+    def test_active_list_can_be_filtered_by_date(self) -> None:
+        reference_date = date.today() - timedelta(days=5)
+        response = self.client.get(
+            reverse("portal:active_announcement_list"),
+            {"date": reference_date.isoformat()},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["announcements"]), 1)
+        self.assertEqual(response.context["announcements"][0]["id"], 2)
+        self.assertContains(
+            response, 'value="' + reference_date.isoformat() + '"'
+        )
+
+    def test_statistics_page_shows_database_aggregates(self) -> None:
+        response = self.client.get(reverse("portal:statistics"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["summary"]["total_count"], 3)
+        self.assertEqual(response.context["summary"]["published_count"], 2)
+        self.assertContains(response, "Finance")
+        self.assertContains(response, "Статистика объявлений")
+
     def test_dynamic_announcement_url_shows_announcement(self) -> None:
         response = self.client.get(
             reverse("portal:announcement_detail", args=[1])
@@ -110,6 +139,7 @@ class AnnouncementPageTests(TestCase):
 
     def test_empty_announcement_list_has_an_empty_state(self) -> None:
         self.data_file.write_text("[]", encoding="utf-8")
+        import_announcements(self.data_file, self.database_file)
 
         response = self.client.get(reverse("portal:announcement_list"))
 

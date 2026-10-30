@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Статистика — Корпоративные объявления{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <p class="eyebrow">Аналитика портала</p>
+    <h1>Статистика объявлений</h1>
+    <p class="muted">Сводка и распределение объявлений.</p>
+</section>
+<section class="stats-grid" aria-label="Сводные показатели">
+    <article class="card stat-card"><span>Всего объявлений</span><strong>{{ summary.total_count|default:0 }}</strong></article>
+    <article class="card stat-card"><span>Опубликовано</span><strong>{{ summary.published_count|default:0 }}</strong></article>
+    <article class="card stat-card"><span>Активно сегодня</span><strong>{{ summary.active_count|default:0 }}</strong></article>
+    <article class="card stat-card"><span>Средний приоритет</span><strong>{{ summary.average_priority|floatformat:1|default:"—" }}</strong></article>
+</section>
+<section class="section stats-tables">
+    <div>
+        <h2>По отделам</h2>
+        {% if departments %}<table><thead><tr><th>Отдел</th><th>Всего</th><th>Опубликовано</th></tr></thead><tbody>
+        {% for department in departments %}<tr><td>{{ department.department }}</td><td>{{ department.announcement_count }}</td><td>{{ department.published_count }}</td></tr>{% endfor %}
+        </tbody></table>{% else %}<p class="empty-state">Данных пока нет.</p>{% endif %}
+    </div>
+    <div>
+        <h2>По приоритету</h2>
+        {% if priorities %}<table><thead><tr><th>Приоритет</th><th>Объявлений</th></tr></thead><tbody>
+        {% for item in priorities %}<tr><td>{{ item.priority }}</td><td>{{ item.announcement_count }}</td></tr>{% endfor %}
+        </tbody></table>{% else %}<p class="empty-state">Данных пока нет.</p>{% endif %}
+    </div>
+</section>
+{% endblock %}

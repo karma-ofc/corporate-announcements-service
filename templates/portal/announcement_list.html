@@ -9,6 +9,15 @@
     <p class="muted">{{ page_description }}</p>
 </section>
 
+{% if selected_date %}
+<form class="date-filter" method="get">
+    <label class="search-label" for="active-date">Показать объявления на дату</label>
+    <input class="search-input" id="active-date" name="date" type="date" value="{{ selected_date }}">
+    <button class="button button-primary" type="submit">Найти</button>
+</form>
+{% if invalid_date %}<p class="filter-error" role="alert">Некорректная дата; показаны объявления на сегодня.</p>{% endif %}
+{% endif %}
+
 <label class="search-label" for="announcement-search">Найти объявление</label>
 <input
     class="search-input"
@@ -20,7 +29,7 @@
 
 {% if announcements %}
     <div class="announcement-grid announcement-list" id="announcement-results">
-        {% for announcement_id, announcement in announcements %}
+        {% for announcement in announcements %}
             {% include "portal/partials/announcement_card.html" %}
         {% endfor %}
     </div>

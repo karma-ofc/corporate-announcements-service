@@ -30,7 +30,7 @@
     </div>
     {% if announcements %}
         <div class="announcement-grid">
-            {% for announcement_id, announcement in announcements %}
+            {% for announcement in announcements %}
                 {% include "portal/partials/announcement_card.html" %}
             {% endfor %}
         </div>

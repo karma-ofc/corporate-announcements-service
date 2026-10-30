@@ -7,6 +7,7 @@ app_name = "portal"
 urlpatterns = [
     path("", views.home, name="home"),
     path("announcements/", views.announcement_list, name="announcement_list"),
+    path("statistics/", views.statistics, name="statistics"),
     path(
         "announcements/active/",
         views.active_announcement_list,

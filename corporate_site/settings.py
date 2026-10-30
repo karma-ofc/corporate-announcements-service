@@ -104,5 +104,6 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 ANNOUNCEMENTS_FILE = BASE_DIR / "data" / "announcements.json"
+ANNOUNCEMENTS_DB_PATH = BASE_DIR / "data" / "announcements.sqlite3"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
