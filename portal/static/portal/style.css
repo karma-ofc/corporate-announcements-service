@@ -360,9 +360,73 @@ a:hover {
     margin: 0 0 22px;
 }
 
+.announcement-filters {
+    display: grid;
+    gap: 8px;
+    margin: 24px 0;
+    padding: 22px;
+    border: 1px solid #e5eaf2;
+    border-radius: 16px;
+    background: #fff;
+}
+
+.filter-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+    margin-bottom: 12px;
+}
+
+.filter-controls label {
+    display: grid;
+    gap: 6px;
+    color: #48566c;
+    font-weight: 650;
+}
+
+.filter-controls select {
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e4;
+    border-radius: 9px;
+    color: #17243a;
+    background: #fff;
+    font: inherit;
+}
+
+.filter-controls select:focus {
+    border-color: #4778ef;
+    outline: 3px solid rgb(71 120 239 / 18%);
+}
+
 .date-filter .search-input {
     width: auto;
     margin: 0 10px 0 0;
+}
+
+.pagination {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 28px 0;
+}
+
+.pagination a,
+.pagination strong {
+    min-width: 40px;
+    padding: 7px 12px;
+    border: 1px solid #d8e0ec;
+    border-radius: 8px;
+    background: #fff;
+    text-align: center;
+}
+
+.pagination strong {
+    border-color: #244ec7;
+    color: #fff;
+    background: #244ec7;
 }
 
 .button-primary {

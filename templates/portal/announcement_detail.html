@@ -4,8 +4,14 @@
 
 {% block content %}
 <article class="detail-card">
-    <a class="back-link" href="{% url 'portal:announcement_list' %}">← Все объявления</a>
-    <p class="eyebrow">{{ announcement.department }}</p>
+    <a class="back-link" href="{% url 'portal:announcement_list' %}">
+        ← К объявлениям
+    </a>
+    <p class="eyebrow">
+        <a href="{% url 'portal:announcement_list' %}?department={{ announcement.department_id }}">
+            {{ announcement.department }}
+        </a>
+    </p>
     <h1>{{ announcement.title }}</h1>
     <div class="detail-meta">
         <span class="priority priority-{{ announcement.priority }}">
@@ -15,18 +21,31 @@
         <span>Действует до: {{ announcement.expiry_date|date:"d.m.Y" }}</span>
     </div>
     {% if is_active %}
-        <p class="status status-active">Объявление опубликовано и активно.</p>
+    <p class="status status-active">Объявление активно и доступно сотрудникам.</p>
     {% elif announcement.is_published %}
-        <p class="status status-expired">Срок действия объявления истёк.</p>
+    <p class="status status-expired">Срок действия объявления истёк.</p>
     {% else %}
-        <p class="status status-draft">Объявление находится в черновике.</p>
+    <p class="status status-draft">Объявление сохранено в черновиках.</p>
     {% endif %}
     <div class="announcement-body">
         {% if announcement.text %}
             {{ announcement.text|linebreaks }}
         {% else %}
-            <p>Подробности не указаны.</p>
+            <p>Дополнительный текст не указан.</p>
         {% endif %}
     </div>
 </article>
+
+{% if related_announcements %}
+<section class="section" aria-labelledby="related-heading">
+    <h2 id="related-heading">
+        Другие объявления отдела «{{ announcement.department }}»
+    </h2>
+    <div class="announcement-grid">
+        {% for announcement in related_announcements %}
+            {% include "portal/partials/announcement_card.html" %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
 {% endblock %}

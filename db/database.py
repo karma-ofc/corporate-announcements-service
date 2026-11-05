@@ -10,6 +10,8 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_DB_PATH = PROJECT_ROOT / "data" / "announcements.sqlite3"
 SCHEMA_PATH = PROJECT_ROOT / "sql" / "schema.sql"
 
+# Подключение к базе данных SQLite для хранения объявлений
+
 
 def get_connection(db_path: Path | str | None = None) -> sqlite3.Connection:
     """Open a configured connection with foreign-key checks enabled."""

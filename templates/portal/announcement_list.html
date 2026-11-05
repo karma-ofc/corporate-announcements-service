@@ -9,34 +9,120 @@
     <p class="muted">{{ page_description }}</p>
 </section>
 
-{% if selected_date %}
-<form class="date-filter" method="get">
-    <label class="search-label" for="active-date">Показать объявления на дату</label>
-    <input class="search-input" id="active-date" name="date" type="date" value="{{ selected_date }}">
-    <button class="button button-primary" type="submit">Найти</button>
+<form class="announcement-filters" method="get">
+    {% if selected_date %}
+    <label class="search-label" for="active-date">Объявления на дату</label>
+    <input class="search-input" id="active-date" name="date" type="date"
+           value="{{ selected_date }}">
+    {% endif %}
+    <label class="search-label" for="announcement-search">
+        Поиск по заголовку, тексту или отделу
+    </label>
+    <input class="search-input" id="announcement-search" name="q" type="search"
+           value="{{ search_query }}" placeholder="Введите поисковый запрос"
+           autocomplete="off">
+    <label class="search-label" for="title-search">
+        Поиск только по заголовку
+    </label>
+    <input class="search-input" id="title-search" name="title" type="search"
+           value="{{ title_search }}" placeholder="Введите заголовок"
+           autocomplete="off">
+    <div class="filter-controls">
+        <label>Отдел
+            <select name="department">
+                <option value="">Все отделы</option>
+                {% for department in departments %}
+                <option value="{{ department.id }}"
+                    {% if selected_department == department.id|stringformat:"s" %}
+                    selected{% endif %}>
+                    {{ department.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>Приоритет
+            <select name="priority">
+                <option value="">Любой</option>
+                <option value="3"
+                    {% if selected_priority == "3" %}selected{% endif %}>
+                    Высокий
+                </option>
+                <option value="2"
+                    {% if selected_priority == "2" %}selected{% endif %}>
+                    Средний
+                </option>
+                <option value="1"
+                    {% if selected_priority == "1" %}selected{% endif %}>
+                    Низкий
+                </option>
+            </select>
+        </label>
+        <label>Статус
+            <select name="status">
+                <option value="all"
+                    {% if selected_status == "all" %}selected{% endif %}>
+                    Все
+                </option>
+                <option value="published"
+                    {% if selected_status == "published" %}selected{% endif %}>
+                    Опубликованные
+                </option>
+                <option value="draft"
+                    {% if selected_status == "draft" %}selected{% endif %}>
+                    Черновики
+                </option>
+            </select>
+        </label>
+        <label>Сортировка
+            <select name="sort">
+                {% for key, label in sort_options.items %}
+                <option value="{{ key }}"
+                    {% if selected_sort == key %}selected{% endif %}>
+                    {{ label }}
+                </option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+    <button class="button button-primary" type="submit">Применить фильтры</button>
+    <a class="text-link" href="{{ request.path }}">Сбросить</a>
 </form>
-{% if invalid_date %}<p class="filter-error" role="alert">Некорректная дата; показаны объявления на сегодня.</p>{% endif %}
+
+{% if invalid_date %}
+<p class="filter-error" role="alert">
+    Некорректная дата; показаны объявления на сегодня.
+</p>
+{% endif %}
+{% if invalid_filters %}
+<p class="filter-error" role="alert">
+    Некоторые параметры не распознаны и были сброшены.
+</p>
 {% endif %}
 
-<label class="search-label" for="announcement-search">Найти объявление</label>
-<input
-    class="search-input"
-    id="announcement-search"
-    type="search"
-    placeholder="Введите заголовок или название отдела"
-    autocomplete="off"
->
-
 {% if announcements %}
-    <div class="announcement-grid announcement-list" id="announcement-results">
-        {% for announcement in announcements %}
-            {% include "portal/partials/announcement_card.html" %}
-        {% endfor %}
-    </div>
-    <p class="empty-state search-empty" id="search-empty" hidden>
-        Объявления по вашему запросу не найдены.
-    </p>
+<div class="announcement-grid announcement-list" id="announcement-results">
+    {% for announcement in announcements %}
+        {% include "portal/partials/announcement_card.html" %}
+    {% endfor %}
+</div>
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="pagination" aria-label="Страницы объявлений">
+    {% if page_obj.has_previous %}
+    <a href="{{ previous_url }}" rel="prev">Назад</a>
+    {% endif %}
+    {% for item in page_links %}
+        {% if item.current %}
+        <strong aria-current="page">{{ item.number }}</strong>
+        {% else %}
+        <a href="{{ item.url }}">{{ item.number }}</a>
+        {% endif %}
+    {% endfor %}
+    {% if page_obj.has_next %}
+    <a href="{{ next_url }}" rel="next">Вперёд</a>
+    {% endif %}
+</nav>
+{% endif %}
 {% else %}
-    <p class="empty-state">{{ empty_message }}</p>
+<p class="empty-state">{{ empty_message }}</p>
 {% endif %}
 {% endblock %}

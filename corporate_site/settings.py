@@ -97,11 +97,7 @@ TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
 
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
+# Подключение базы данных SQLite для хранения объявлений
 STATIC_URL = 'static/'
 ANNOUNCEMENTS_FILE = BASE_DIR / "data" / "announcements.json"
 ANNOUNCEMENTS_DB_PATH = BASE_DIR / "data" / "announcements.sqlite3"

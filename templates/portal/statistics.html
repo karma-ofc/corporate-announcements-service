@@ -18,7 +18,7 @@
     <div>
         <h2>По отделам</h2>
         {% if departments %}<table><thead><tr><th>Отдел</th><th>Всего</th><th>Опубликовано</th></tr></thead><tbody>
-        {% for department in departments %}<tr><td>{{ department.department }}</td><td>{{ department.announcement_count }}</td><td>{{ department.published_count }}</td></tr>{% endfor %}
+        {% for department in departments %}<tr><td>{{ department.name }}</td><td>{{ department.announcement_count }}</td><td>{{ department.published_count }}</td></tr>{% endfor %}
         </tbody></table>{% else %}<p class="empty-state">Данных пока нет.</p>{% endif %}
     </div>
     <div>
