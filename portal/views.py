@@ -3,7 +3,7 @@ from datetime import date
 from django.core.paginator import Paginator
 from django.db.models import Avg, Count, Q, QuerySet
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 
 from portal.models import Announcement, Department
 
@@ -41,7 +41,7 @@ def home(request: HttpRequest) -> HttpResponse:
         active_count=Count(
             "pk",
             filter=Q(
-                is_published=True,
+                status=Announcement.Status.PUBLISHED,
                 publish_date__lte=today,
                 expiry_date__gte=today,
             ),
@@ -106,9 +106,11 @@ def _announcement_list_page(
 
     status = request.GET.get("status", "all").strip()
     if status == "published":
-        queryset = queryset.filter(is_published=True)
+        queryset = queryset.published()
     elif status == "draft":
-        queryset = queryset.filter(is_published=False)
+        queryset = queryset.drafts()
+    elif status == "withdrawn":
+        queryset = queryset.withdrawn()
     elif status != "all":
         status = "all"
         invalid_filters = True
@@ -200,10 +202,8 @@ def active_announcement_list(request: HttpRequest) -> HttpResponse:
     else:
         reference_date = date.today()
 
-    queryset = Announcement.objects.select_related("department").filter(
-        is_published=True,
-        publish_date__lte=reference_date,
-        expiry_date__gte=reference_date,
+    queryset = Announcement.objects.active_on(reference_date).select_related(
+        "department"
     )
     return _announcement_list_page(
         request,
@@ -218,10 +218,9 @@ def active_announcement_list(request: HttpRequest) -> HttpResponse:
 
 def archived_announcement_list(request: HttpRequest) -> HttpResponse:
     """Show published announcements whose expiry date has passed."""
-    queryset = Announcement.objects.select_related("department").filter(
-        is_published=True,
-        expiry_date__lt=date.today(),
-    )
+    queryset = Announcement.objects.published().select_related(
+        "department"
+    ).filter(expiry_date__lt=date.today())
     return _announcement_list_page(
         request,
         queryset,
@@ -236,11 +235,22 @@ def statistics(request: HttpRequest) -> HttpResponse:
     today = date.today()
     summary = Announcement.objects.aggregate(
         total_count=Count("pk"),
-        published_count=Count("pk", filter=Q(is_published=True)),
+        published_count=Count(
+            "pk",
+            filter=Q(status=Announcement.Status.PUBLISHED),
+        ),
+        draft_count=Count(
+            "pk",
+            filter=Q(status=Announcement.Status.DRAFT),
+        ),
+        withdrawn_count=Count(
+            "pk",
+            filter=Q(status=Announcement.Status.WITHDRAWN),
+        ),
         active_count=Count(
             "pk",
             filter=Q(
-                is_published=True,
+                status=Announcement.Status.PUBLISHED,
                 publish_date__lte=today,
                 expiry_date__gte=today,
             ),
@@ -252,7 +262,9 @@ def statistics(request: HttpRequest) -> HttpResponse:
             announcement_count=Count("announcements"),
             published_count=Count(
                 "announcements",
-                filter=Q(announcements__is_published=True),
+                filter=Q(
+                    announcements__status=Announcement.Status.PUBLISHED
+                ),
             ),
         )
         .values("name", "announcement_count", "published_count")
@@ -276,12 +288,12 @@ def statistics(request: HttpRequest) -> HttpResponse:
 
 def announcement_detail(
     request: HttpRequest,
-    announcement_id: int,
+    slug: str,
 ) -> HttpResponse:
     """Show an announcement, its department, and related announcements."""
     announcement = get_object_or_404(
         Announcement.objects.select_related("department"),
-        pk=announcement_id,
+        slug=slug,
     )
     related_announcements = (
         announcement.department.announcements.exclude(pk=announcement.pk)
@@ -297,6 +309,15 @@ def announcement_detail(
             "related_announcements": related_announcements,
         },
     )
+
+
+def legacy_announcement_detail(
+    request: HttpRequest,
+    announcement_id: int,
+) -> HttpResponse:
+    """Redirect old ID-based announcement URLs to their canonical slug."""
+    announcement = get_object_or_404(Announcement, pk=announcement_id)
+    return redirect(announcement)
 
 
 def page_not_found(

@@ -11,6 +11,8 @@
 <section class="stats-grid" aria-label="Сводные показатели">
     <article class="card stat-card"><span>Всего объявлений</span><strong>{{ summary.total_count|default:0 }}</strong></article>
     <article class="card stat-card"><span>Опубликовано</span><strong>{{ summary.published_count|default:0 }}</strong></article>
+    <article class="card stat-card"><span>Черновики</span><strong>{{ summary.draft_count|default:0 }}</strong></article>
+    <article class="card stat-card"><span>Снято с публикации</span><strong>{{ summary.withdrawn_count|default:0 }}</strong></article>
     <article class="card stat-card"><span>Активно сегодня</span><strong>{{ summary.active_count|default:0 }}</strong></article>
     <article class="card stat-card"><span>Средний приоритет</span><strong>{{ summary.average_priority|floatformat:1|default:"—" }}</strong></article>
 </section>

@@ -71,6 +71,10 @@
                     {% if selected_status == "draft" %}selected{% endif %}>
                     Черновики
                 </option>
+                <option value="withdrawn"
+                    {% if selected_status == "withdrawn" %}selected{% endif %}>
+                    Снятые с публикации
+                </option>
             </select>
         </label>
         <label>Сортировка
