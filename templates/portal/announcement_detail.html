@@ -22,8 +22,10 @@
     </div>
     {% if is_active %}
     <p class="status status-active">Объявление активно и доступно сотрудникам.</p>
-    {% elif announcement.is_published %}
+    {% elif announcement.status == "published" %}
     <p class="status status-expired">Срок действия объявления истёк.</p>
+    {% elif announcement.status == "withdrawn" %}
+    <p class="status status-draft">Объявление снято с публикации.</p>
     {% else %}
     <p class="status status-draft">Объявление сохранено в черновиках.</p>
     {% endif %}

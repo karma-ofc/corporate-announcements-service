@@ -30,7 +30,7 @@ class AnnouncementPageTests(TestCase):
             priority=3,
             publish_date=today,
             expiry_date=today + timedelta(days=10),
-            is_published=True,
+            status=Announcement.Status.PUBLISHED,
         )
         self.archived = Announcement.objects.create(
             title="Архивное сообщение",
@@ -39,7 +39,7 @@ class AnnouncementPageTests(TestCase):
             priority=2,
             publish_date=today - timedelta(days=10),
             expiry_date=today - timedelta(days=1),
-            is_published=True,
+            status=Announcement.Status.PUBLISHED,
         )
         self.draft = Announcement.objects.create(
             title="Черновик отдела",
@@ -48,7 +48,7 @@ class AnnouncementPageTests(TestCase):
             priority=1,
             publish_date=today,
             expiry_date=today + timedelta(days=10),
-            is_published=False,
+            status=Announcement.Status.DRAFT,
         )
 
     def test_homepage_uses_orm_counts_and_shows_announcements(self) -> None:
@@ -107,7 +107,7 @@ class AnnouncementPageTests(TestCase):
             {self.active, self.archived},
         )
         self.assertEqual(
-            Announcement.objects.exclude(is_published=False).count(),
+            Announcement.objects.published().count(),
             2,
         )
 
@@ -211,7 +211,7 @@ class AnnouncementPageTests(TestCase):
                 priority=2,
                 publish_date=date.today(),
                 expiry_date=date.today() + timedelta(days=1),
-                is_published=True,
+                status=Announcement.Status.PUBLISHED,
             )
 
         response = self.client.get(
@@ -245,6 +245,8 @@ class AnnouncementPageTests(TestCase):
 
         self.assertEqual(response.context["summary"]["total_count"], 3)
         self.assertEqual(response.context["summary"]["published_count"], 2)
+        self.assertEqual(response.context["summary"]["draft_count"], 1)
+        self.assertEqual(response.context["summary"]["withdrawn_count"], 0)
         self.assertEqual(response.context["summary"]["active_count"], 1)
         self.assertEqual(response.context["summary"]["average_priority"], 2)
         departments = {
@@ -263,7 +265,7 @@ class AnnouncementPageTests(TestCase):
             expiry_date=date.today() + timedelta(days=1),
         )
         response = self.client.get(
-            reverse("portal:announcement_detail", args=[self.active.pk])
+            self.active.get_absolute_url()
         )
 
         self.assertEqual(response.status_code, 200)
@@ -278,6 +280,51 @@ class AnnouncementPageTests(TestCase):
         )
         self.assertEqual(self.hr.announcements.count(), 2)
         self.assertContains(response, "Другие объявления отдела")
+        self.assertEqual(
+            self.active.get_absolute_url(),
+            f"/announcements/{self.active.slug}/",
+        )
+
+    def test_announcement_status_manager_and_generated_title_length(self):
+        withdrawn = Announcement.objects.create(
+            title="Снятое объявление",
+            department=self.hr,
+            priority=1,
+            publish_date=date.today(),
+            expiry_date=date.today() + timedelta(days=1),
+            status=Announcement.Status.WITHDRAWN,
+        )
+
+        self.assertEqual(
+            list(Announcement.objects.drafts()),
+            [self.draft],
+        )
+        self.assertEqual(
+            list(Announcement.objects.withdrawn()),
+            [withdrawn],
+        )
+        self.assertEqual(self.active.title_length, len(self.active.title))
+        self.active.title = "Обновлённый заголовок"
+        self.active.save(update_fields=["title"])
+        self.active.refresh_from_db()
+        self.assertEqual(
+            self.active.title_length,
+            len("Обновлённый заголовок"),
+        )
+
+    def test_legacy_id_detail_url_redirects_to_slug(self):
+        response = self.client.get(
+            reverse(
+                "portal:announcement_detail_legacy",
+                args=[self.active.pk],
+            )
+        )
+
+        self.assertRedirects(
+            response,
+            self.active.get_absolute_url(),
+            fetch_redirect_response=False,
+        )
 
     def test_department_values_and_empty_state(self) -> None:
         response = self.client.get(reverse("portal:announcement_list"))
@@ -338,6 +385,8 @@ class AnnouncementPageTests(TestCase):
         response = self.client.get(reverse("portal:home"))
         template = get_template("portal/home.html")
 
+        self.assertEqual(response.context["site_name"], "Внутри компании")
+        self.assertEqual(response.context["announcements_count"], 3)
         self.assertEqual(
             Path(template.origin.name),
             Path(__file__).resolve().parent.parent
@@ -357,7 +406,10 @@ class AnnouncementPageTests(TestCase):
     @override_settings(DEBUG=False)
     def test_unknown_announcement_uses_custom_not_found_page(self) -> None:
         response = self.client.get(
-            reverse("portal:announcement_detail", args=[999])
+            reverse(
+                "portal:announcement_detail",
+                kwargs={"slug": "missing-announcement"},
+            )
         )
         self.assertContains(response, "Страница не найдена", status_code=404)
         missing_page = self.client.get("/does-not-exist/")
@@ -404,6 +456,7 @@ class LegacyImportCommandTests(TestCase):
         imported = Announcement.objects.get(pk=47)
         self.assertEqual(imported.title, "Плановое отключение VPN")
         self.assertEqual(imported.department.name, "ИТ")
+        self.assertEqual(imported.status, Announcement.Status.PUBLISHED)
         self.assertEqual(Announcement.objects.filter(pk=47).count(), 1)
 
     def test_json_import_is_repeatable(self) -> None:

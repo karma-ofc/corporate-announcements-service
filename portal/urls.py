@@ -20,6 +20,11 @@ urlpatterns = [
     ),
     path(
         "announcements/<int:announcement_id>/",
+        views.legacy_announcement_detail,
+        name="announcement_detail_legacy",
+    ),
+    path(
+        "announcements/<slug:slug>/",
         views.announcement_detail,
         name="announcement_detail",
     ),

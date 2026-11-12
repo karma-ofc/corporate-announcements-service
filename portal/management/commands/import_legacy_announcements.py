@@ -52,7 +52,11 @@ class Command(BaseCommand):
                             "priority": announcement.priority,
                             "publish_date": announcement.publish_date,
                             "expiry_date": announcement.expiry_date,
-                            "is_published": announcement.is_published,
+                            "status": (
+                                Announcement.Status.PUBLISHED
+                                if announcement.is_published
+                                else Announcement.Status.DRAFT
+                            ),
                         },
                     )
                     created += int(was_created)

@@ -24,6 +24,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'portal.apps.PortalConfig',
 ]
+if DEBUG:
+    INSTALLED_APPS.append('debug_toolbar')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -34,6 +36,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+if DEBUG:
+    MIDDLEWARE.insert(
+        1,
+        'debug_toolbar.middleware.DebugToolbarMiddleware',
+    )
 
 ROOT_URLCONF = 'corporate_site.urls'
 
@@ -47,6 +54,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'portal.context_processors.announcement_context',
             ],
         },
     },
@@ -103,3 +111,5 @@ ANNOUNCEMENTS_FILE = BASE_DIR / "data" / "announcements.json"
 ANNOUNCEMENTS_DB_PATH = BASE_DIR / "data" / "announcements.sqlite3"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+INTERNAL_IPS = ['127.0.0.1']
