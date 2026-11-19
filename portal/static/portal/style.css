@@ -370,6 +370,41 @@ a:hover {
     background: #fff;
 }
 
+.filter-field,
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filter-field input,
+.filter-field select,
+.form-field input,
+.form-field select,
+.form-field textarea {
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+.form-field {
+    margin-bottom: 16px;
+}
+
+.form-error,
+.errorlist {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin: 4px 0 0;
+}
+
+.detail-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-top: 24px;
+}
+
 .filter-controls {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));

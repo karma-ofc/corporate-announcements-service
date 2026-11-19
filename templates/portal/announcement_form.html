@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} — Корпоративные объявления{% endblock %}
+
+{% block content %}
+<section class="detail-card">
+    <a class="back-link" href="{% url 'portal:announcement_list' %}">
+        ← К объявлениям
+    </a>
+    <h1>{{ page_title }}</h1>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form %}
+        <div class="form-field">
+            {{ field.label_tag }}
+            {{ field }}
+            {% for error in field.errors %}
+            <p class="form-error" role="alert">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endfor %}
+        <button class="button button-primary" type="submit">
+            Сохранить объявление
+        </button>
+    </form>
+</section>
+{% endblock %}

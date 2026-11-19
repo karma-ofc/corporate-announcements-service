@@ -14,6 +14,7 @@ from django.template.loader import get_template
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
+from portal.forms import AnnouncementForm
 from portal.models import Announcement, Department
 
 
@@ -325,6 +326,72 @@ class AnnouncementPageTests(TestCase):
             self.active.get_absolute_url(),
             fetch_redirect_response=False,
         )
+
+    def test_announcement_form_rejects_overlapping_published_period(self):
+        form = AnnouncementForm(
+            data={
+                "title": "Второе объявление",
+                "text": "",
+                "department": self.hr.pk,
+                "priority": 2,
+                "publish_date": date.today() + timedelta(days=2),
+                "expiry_date": date.today() + timedelta(days=5),
+                "status": Announcement.Status.PUBLISHED,
+            }
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("уже есть", str(form.non_field_errors()))
+
+    def test_announcement_form_allows_editing_same_published_period(self):
+        form = AnnouncementForm(
+            instance=self.active,
+            data={
+                "title": self.active.title,
+                "text": self.active.text,
+                "department": self.hr.pk,
+                "priority": self.active.priority,
+                "publish_date": self.active.publish_date,
+                "expiry_date": self.active.expiry_date,
+                "status": Announcement.Status.PUBLISHED,
+            },
+        )
+
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_create_and_withdraw_views_use_post_forms(self):
+        create_response = self.client.post(
+            reverse("portal:announcement_create"),
+            {
+                "title": "Новое сообщение",
+                "text": "Для сотрудников.",
+                "department": self.finance.pk,
+                "priority": 1,
+                "publish_date": date.today() + timedelta(days=20),
+                "expiry_date": date.today() + timedelta(days=21),
+                "status": Announcement.Status.DRAFT,
+            },
+        )
+
+        self.assertEqual(create_response.status_code, 302)
+        created = Announcement.objects.get(title="Новое сообщение")
+        self.client.post(
+            reverse(
+                "portal:announcement_withdraw",
+                kwargs={"slug": created.slug},
+            )
+        )
+        created.refresh_from_db()
+        self.assertEqual(created.status, Announcement.Status.WITHDRAWN)
+        self.assertContains(
+            self.client.get(created.get_absolute_url()),
+            "снято с публикации",
+        )
+
+    def test_form_templates_include_csrf_token(self):
+        response = self.client.get(reverse("portal:announcement_create"))
+
+        self.assertContains(response, 'name="csrfmiddlewaretoken"')
 
     def test_department_values_and_empty_state(self) -> None:
         response = self.client.get(reverse("portal:announcement_list"))

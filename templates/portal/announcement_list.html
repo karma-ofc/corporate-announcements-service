@@ -10,84 +10,15 @@
 </section>
 
 <form class="announcement-filters" method="get">
-    {% if selected_date %}
-    <label class="search-label" for="active-date">Объявления на дату</label>
-    <input class="search-input" id="active-date" name="date" type="date"
-           value="{{ selected_date }}">
-    {% endif %}
-    <label class="search-label" for="announcement-search">
-        Поиск по заголовку, тексту или отделу
-    </label>
-    <input class="search-input" id="announcement-search" name="q" type="search"
-           value="{{ search_query }}" placeholder="Введите поисковый запрос"
-           autocomplete="off">
-    <label class="search-label" for="title-search">
-        Поиск только по заголовку
-    </label>
-    <input class="search-input" id="title-search" name="title" type="search"
-           value="{{ title_search }}" placeholder="Введите заголовок"
-           autocomplete="off">
-    <div class="filter-controls">
-        <label>Отдел
-            <select name="department">
-                <option value="">Все отделы</option>
-                {% for department in departments %}
-                <option value="{{ department.id }}"
-                    {% if selected_department == department.id|stringformat:"s" %}
-                    selected{% endif %}>
-                    {{ department.name }}
-                </option>
-                {% endfor %}
-            </select>
-        </label>
-        <label>Приоритет
-            <select name="priority">
-                <option value="">Любой</option>
-                <option value="3"
-                    {% if selected_priority == "3" %}selected{% endif %}>
-                    Высокий
-                </option>
-                <option value="2"
-                    {% if selected_priority == "2" %}selected{% endif %}>
-                    Средний
-                </option>
-                <option value="1"
-                    {% if selected_priority == "1" %}selected{% endif %}>
-                    Низкий
-                </option>
-            </select>
-        </label>
-        <label>Статус
-            <select name="status">
-                <option value="all"
-                    {% if selected_status == "all" %}selected{% endif %}>
-                    Все
-                </option>
-                <option value="published"
-                    {% if selected_status == "published" %}selected{% endif %}>
-                    Опубликованные
-                </option>
-                <option value="draft"
-                    {% if selected_status == "draft" %}selected{% endif %}>
-                    Черновики
-                </option>
-                <option value="withdrawn"
-                    {% if selected_status == "withdrawn" %}selected{% endif %}>
-                    Снятые с публикации
-                </option>
-            </select>
-        </label>
-        <label>Сортировка
-            <select name="sort">
-                {% for key, label in sort_options.items %}
-                <option value="{{ key }}"
-                    {% if selected_sort == key %}selected{% endif %}>
-                    {{ label }}
-                </option>
-                {% endfor %}
-            </select>
-        </label>
+    {% for field in form %}
+    <div class="filter-field">
+        {{ field.label_tag }}
+        {{ field }}
+        {% for error in field.errors %}
+        <p class="form-error" role="alert">{{ error }}</p>
+        {% endfor %}
     </div>
+    {% endfor %}
     <button class="button button-primary" type="submit">Применить фильтры</button>
     <a class="text-link" href="{{ request.path }}">Сбросить</a>
 </form>

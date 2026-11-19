@@ -5,6 +5,7 @@ from django.db.models import Avg, Count, Q, QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
+from portal.forms import AnnouncementFilterForm, AnnouncementForm
 from portal.models import Announcement, Department
 
 PAGE_SIZE = 10
@@ -71,8 +72,11 @@ def _announcement_list_page(
     invalid_date: bool = False,
 ) -> HttpResponse:
     """Apply validated list filters and render one paginated result page."""
-    search = request.GET.get("q", "").strip()[:100]
-    title_search = request.GET.get("title", "").strip()[:100]
+    form = AnnouncementFilterForm(request.GET or None)
+    form_valid = form.is_bound and form.is_valid()
+    values = form.cleaned_data if form_valid else {}
+    search = values.get("q", "").strip()
+    title_search = values.get("title", "").strip()
     invalid_filters = False
     if title_search:
         queryset = queryset.filter(title__icontains=title_search)
@@ -83,41 +87,24 @@ def _announcement_list_page(
             | Q(department__name__icontains=search)
         )
 
-    department_id = request.GET.get("department", "").strip()
-    if department_id:
-        department_name = None
-        if department_id.isdecimal():
-            department_name = Department.objects.filter(
-                pk=department_id
-            ).values_list("name", flat=True).first()
-        if department_name is not None:
-            queryset = queryset.filter(department__name=department_name)
-        else:
-            department_id = ""
-            invalid_filters = True
+    department = values.get("department")
+    department_id = str(department.pk) if department else ""
+    if department:
+        queryset = queryset.filter(department=department)
 
-    priority = request.GET.get("priority", "").strip()
+    priority = values.get("priority", "")
     if priority:
-        if priority in {"1", "2", "3"}:
-            queryset = queryset.filter(priority=int(priority))
-        else:
-            priority = ""
-            invalid_filters = True
+        queryset = queryset.filter(priority=int(priority))
 
-    status = request.GET.get("status", "all").strip()
+    status = values.get("status", "all") or "all"
     if status == "published":
         queryset = queryset.published()
     elif status == "draft":
         queryset = queryset.drafts()
     elif status == "withdrawn":
         queryset = queryset.withdrawn()
-    elif status != "all":
-        status = "all"
-        invalid_filters = True
-
-    requested_sort = request.GET.get("sort", "-priority").strip()
-    if requested_sort not in SORT_OPTIONS:
-        requested_sort = "-priority"
+    requested_sort = values.get("sort") or "-priority"
+    if form.is_bound and not form_valid:
         invalid_filters = True
     queryset = queryset.order_by(*SORT_FIELDS[requested_sort])
 
@@ -169,6 +156,7 @@ def _announcement_list_page(
             "selected_status": status,
             "selected_sort": requested_sort,
             "sort_options": SORT_OPTIONS,
+            "form": form,
             "invalid_filters": invalid_filters,
             "selected_date": (
                 selected_date.isoformat() if selected_date else ""
@@ -191,16 +179,11 @@ def announcement_list(request: HttpRequest) -> HttpResponse:
 
 def active_announcement_list(request: HttpRequest) -> HttpResponse:
     """Show published announcements active on a selected date."""
-    date_value = request.GET.get("date", "").strip()
-    invalid_date = False
-    if date_value:
-        try:
-            reference_date = date.fromisoformat(date_value)
-        except ValueError:
-            reference_date = date.today()
-            invalid_date = True
-    else:
-        reference_date = date.today()
+    form = AnnouncementFilterForm(request.GET or None)
+    form_valid = form.is_bound and form.is_valid()
+    selected_date = form.cleaned_data.get("date") if form_valid else None
+    reference_date = selected_date or date.today()
+    invalid_date = form.is_bound and "date" in form.errors
 
     queryset = Announcement.objects.active_on(reference_date).select_related(
         "department"
@@ -214,6 +197,48 @@ def active_announcement_list(request: HttpRequest) -> HttpResponse:
         selected_date=reference_date,
         invalid_date=invalid_date,
     )
+
+
+def announcement_create(request: HttpRequest) -> HttpResponse:
+    """Create an announcement through the site form."""
+    form = AnnouncementForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        announcement = form.save()
+        return redirect(announcement)
+    return render(
+        request,
+        "portal/announcement_form.html",
+        {"form": form, "page_title": "Новое объявление"},
+    )
+
+
+def announcement_edit(
+    request: HttpRequest,
+    slug: str,
+) -> HttpResponse:
+    """Edit an existing announcement."""
+    announcement = get_object_or_404(Announcement, slug=slug)
+    form = AnnouncementForm(request.POST or None, instance=announcement)
+    if request.method == "POST" and form.is_valid():
+        announcement = form.save()
+        return redirect(announcement)
+    return render(
+        request,
+        "portal/announcement_form.html",
+        {"form": form, "page_title": "Редактирование объявления"},
+    )
+
+
+def announcement_withdraw(
+    request: HttpRequest,
+    slug: str,
+) -> HttpResponse:
+    """Withdraw an announcement without deleting its history."""
+    announcement = get_object_or_404(Announcement, slug=slug)
+    if request.method == "POST":
+        announcement.status = Announcement.Status.WITHDRAWN
+        announcement.save(update_fields=["status"])
+    return redirect(announcement)
 
 
 def archived_announcement_list(request: HttpRequest) -> HttpResponse:

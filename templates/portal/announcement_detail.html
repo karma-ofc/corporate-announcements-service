@@ -36,6 +36,17 @@
             <p>Дополнительный текст не указан.</p>
         {% endif %}
     </div>
+    <div class="detail-actions">
+        <a class="button" href="{% url 'portal:announcement_edit' announcement.slug %}">
+            Редактировать
+        </a>
+        {% if announcement.status != "withdrawn" %}
+        <form method="post" action="{% url 'portal:announcement_withdraw' announcement.slug %}">
+            {% csrf_token %}
+            <button class="button" type="submit">Снять с публикации</button>
+        </form>
+        {% endif %}
+    </div>
 </article>
 
 {% if related_announcements %}
